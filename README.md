@@ -1,6 +1,6 @@
 # Buddy GPS Tracking
 
-<img src="assets/home.png" alt="Home Page">
+![Buddy GPS Tracking](assets/home.png)
 
 A web application to track and display GPS data from an ESP32 device, designed for tracking a pet.
 
