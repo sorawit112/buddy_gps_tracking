@@ -24,6 +24,7 @@ A web application to track and display GPS data from an ESP32 device, designed f
 *   [Rust](https://www.rust-lang.org/tools/install)
 *   [cargo-leptos](https://github.com/leptos-rs/leptos/tree/main/cargo-leptos)
 *   [Node.js](https://nodejs.org/en/) (for end-to-end testing and tailwind )
+*   [Docker](https://docs.docker.com/desktop/?_gl=1*1h3b8e6*_gcl_au*MjEwNTA0Mjg0MC4xNzYyMjcwMjIx*_ga*MTU5ODE3NzM2Mi4xNzYyMjcwMTY4*_ga_XJWPQMJYHQ*czE3NjIyNzAxNjckbzEkZzEkdDE3NjIyNzIxNzckajU5JGwwJGgw) (Optional: for running app directly)
 
 ### Local Installation and Running
 
