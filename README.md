@@ -23,14 +23,15 @@ A web application to track and display GPS data from an ESP32 device, designed f
 
 *   [Rust](https://www.rust-lang.org/tools/install)
 *   [cargo-leptos](https://github.com/leptos-rs/leptos/tree/main/cargo-leptos)
-*   [Node.js](https://nodejs.org/en/) (for end-to-end testing)
+*   [Node.js](https://nodejs.org/en/) (for end-to-end testing and tailwind )
 
-### Installation and Running
+### Local Installation and Running
 
 1.  **Install `cargo-leptos`:**
     ```bash
     cargo install cargo-leptos
     ```
+    Or following getting start here [GettingStart](https://github.com/leptos-rs/cargo-leptos)
 
 2.  **Build and run the application:**
     ```bash
@@ -39,14 +40,16 @@ A web application to track and display GPS data from an ESP32 device, designed f
 
 3.  **Open your browser** to `http://127.0.0.1:3000`.
 
-## Running Tests
+### Using Docker for Starting Application
 
-1.  **Install Node.js dependencies:**
-    ```bash
-    npm install --prefix end2end
-    ```
+    docker run -p 8080:8080 chinouplus/buddy-gps-tracking:latest
 
-2.  **Run the end-to-end tests:**
-    ```bash
-    cargo leptos end2end
-    ```
+### Testing Send Data to Application using `curl`
+    
+    curl -X POST http://0.0.0.0:8080/api/data -H "Content-Type: application/json" -d '{
+        "id": "ESP32_001",
+        "payload": "1A2B3C4DEF", # 10 Hex Chars for 4xlongtitude, 4xlattitude and 2xbattery
+        "date": "2025-10-31",
+        "time": "18:05:22"
+    }'
+    
