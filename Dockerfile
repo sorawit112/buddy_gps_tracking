@@ -27,7 +27,7 @@ RUN mkdir -p /app
 WORKDIR /app
 
 # Cache dependencies (Copy TOML/Lock FIRST)
-COPY Cargo.toml Cargo.lock ./
+COPY Cargo.toml ./
 
 # Create dummy source files to trigger dependency build without full source code
 # This step is only re-run when Cargo.toml/Lock changes, maximizing cache hits
