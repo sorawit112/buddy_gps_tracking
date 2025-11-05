@@ -1,0 +1,45 @@
+menu "App Wi-Fi and GPS-API Configuration"
+config DEVICE_ID
+    string "Device ID"
+    default "ESP32_001"
+    help
+        The builded Device ID
+
+
+config WIFI_SSID
+    string "WiFi SSID"
+    default "MyNetworkName"
+    help
+        The Service Set Identifier (network name) for the ESP32 to connect to.
+
+config WIFI_PASSWORD
+    string "WiFi Password"
+    default "secure_password"
+    help
+        The password for the WiFi network (WPA/WPA2).
+
+config API_URL
+    string "API url"
+    default "http://0.0.0.0:8080/api/data" 
+    help
+        The Full HTTP API service url of GPS Tracking Server
+
+config START_HOUR
+    int "Start Sending Hour"
+    default 8
+    help
+        The Full HTTP API service url of GPS Tracking Server
+
+config END_HOUR
+    int "Stop Sending Hour"
+    default 19
+    help
+        The Full HTTP API service url of GPS Tracking Server
+
+config POLLING_INTERVAL_SEC 
+    int "Polling Interval in Seconds"
+    default 10
+    help
+        The polling time interval btw task
+
+endmenu
