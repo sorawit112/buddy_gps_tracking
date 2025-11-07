@@ -1,5 +1,6 @@
 # Buddy GPS Tracking
 
+# Section 1 *Web Application*
 ![Buddy GPS Tracking](assets/app.png)
 
 A web application to track and display GPS data from an ESP32 device, designed for tracking a pet.
@@ -53,4 +54,18 @@ A web application to track and display GPS data from an ESP32 device, designed f
         "date": "2025-10-31",
         "time": "18:05:22"
     }'
+
+# section 2 *NODE Firmware*
+
+### Firmware State Flow Diagram
+![State Flow](assets/firmware_state.png)
+
+## Features
+
+*   **periodically Data Transamision** telemetry sending interval data to server by HTTP requested -- configurable 
+*   **Power Optimization** optimizing power consomption using Light Sleep and Deep Sleep
+
+## Development
+
+*  **VS-Code** with **ESP-IDF** extension
     
