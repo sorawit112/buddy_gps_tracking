@@ -38,7 +38,7 @@ config END_HOUR
 
 config POLLING_INTERVAL_SEC 
     int "Polling Interval in Seconds"
-    default 10
+    default 300
     help
         The polling time interval btw task
 

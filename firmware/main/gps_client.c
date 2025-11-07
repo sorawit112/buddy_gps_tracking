@@ -32,6 +32,8 @@ const int WIFI_CONNECTED_BIT = BIT0;
 #define POLLING_INTERVAL_SEC    CONFIG_POLLING_INTERVAL_SEC
 #define WAKEUP_LEAD_TIME_MIN    30 //minutes
 
+// use RTC for deep_sleep compatibilites for wakeup at before next working hour in the next day
+// Tracks the last hour (0-23) when data was successfully sent. Initialize to a value outside 0-23.
 RTC_DATA_ATTR static int last_tx_hour_rtc = -1;
 
 // --- Function Prototypes ---
@@ -114,10 +116,10 @@ static esp_err_t http_event_handler(esp_http_client_event_t *evt) {
             ESP_LOGI(TAG, "HTTP_EVENT_HEADERS_SENT");
             break;
         case HTTP_EVENT_ON_HEADER:
-            // ESP_LOGD(TAG, "HTTP_EVENT_ON_HEADER, key=%s, value=%s", evt->header_key, evt->header_value);
+            ESP_LOGD(TAG, "HTTP_EVENT_ON_HEADER, key=%s, value=%s", evt->header_key, evt->header_value);
             break;
         case HTTP_EVENT_ON_DATA:
-            // ESP_LOGI(TAG, "HTTP_EVENT_ON_DATA, len=%d", evt->data_len);
+            ESP_LOGD(TAG, "HTTP_EVENT_ON_DATA, len=%d", evt->data_len);
             break;
         case HTTP_EVENT_ON_FINISH:
             ESP_LOGI(TAG, "HTTP_EVENT_ON_FINISH");
@@ -126,7 +128,7 @@ static esp_err_t http_event_handler(esp_http_client_event_t *evt) {
             ESP_LOGI(TAG, "HTTP_EVENT_DISCONNECTED");
             break;
         case HTTP_EVENT_REDIRECT:
-            break; // New in recent ESP-IDF versions
+            break; 
     }
     return ESP_OK;
 }
@@ -182,10 +184,8 @@ static void send_gps_task(void *pvParameters) {
     cJSON *root = NULL;
     char *json_out = NULL;
     bool should_sleep_deep = false;
+    bool first_quarter_hour = false;
     long sleep_duration_sec = 0;
-
-    // // Tracks the last hour (0-23) when data was successfully sent. Initialize to a value outside 0-23.
-    // static int last_tx_hour = -1;
 
     // Wait for wifi connected
     xEventGroupWaitBits(wifi_event_group, WIFI_CONNECTED_BIT, pdFALSE, pdTRUE, portMAX_DELAY);
@@ -205,10 +205,25 @@ static void send_gps_task(void *pvParameters) {
         }
 
         int current_hour = timeinfo.tm_hour;
+        first_quarter_hour = timeinfo.tm_min <= 15;
 
         // Check 2: Operational Window (8 AM to 7 PM, inclusive)
-        if (current_hour >= START_HOUR && current_hour <= END_HOUR) {
+        if (current_hour >= START_HOUR && current_hour <= END_HOUR ) {
             ESP_LOGI(TAG, "Inside Operational Window (%d:00).", current_hour);
+            
+            // check 3: Within First Quarter otherwise sleep until next hourt
+            if (!first_quarter_hour) {
+                ESP_LOGI(TAG, "Not First Quarter Hour (%d:%d).", current_hour, timeinfo.tm_min);
+
+                // Calculate seconds remaining until next WORKING HOURT
+                int seconds_to_start = (60 - timeinfo.tm_min) * 60 - timeinfo.tm_sec;
+                
+                // Safety check: Don't sleep if it's already next WORKING HOUR
+                if (seconds_to_start > 0) {
+                    vTaskDelay(pdMS_TO_TICKS(seconds_to_start * 1000));
+                    continue;
+                }
+            }
             
             // Check 3: One-Hour Interval
             if (current_hour != last_tx_hour_rtc) {
@@ -275,17 +290,13 @@ static void send_gps_task(void *pvParameters) {
 
         } else {
             // --- 3. Outside Operational Window (Hour 0 to 6, and 20 to 23) ---
-            ESP_LOGI(TAG, "Outside operational window (%d:00). Initiating DEEP SLEEP cycle.", current_hour);
+            ESP_LOGI(TAG, "Outside operational window (%d:%d). Initiating DEEP SLEEP cycle.", current_hour,timeinfo.tm_min);
             should_sleep_deep = true;
             last_tx_hour_rtc = -1; // Reset tracker
-
-            // Calculate sleep duration until (START_HOUR - 30 minutes) the NEXT DAY
-            sleep_duration_sec = calculate_sleep_duration(now);
         }
 
         // --- 4. Execute Deep Sleep ---
         if (should_sleep_deep) {
-            ESP_LOGI(TAG, "Going to Deep Sleep for %ld seconds.", sleep_duration_sec);
 
             // Calculate sleep duration until (START_HOUR - WAKEUP_LEAD_TIME_MIN) the NEXT DAY
             long sleep_duration_sec = calculate_sleep_duration(now);
@@ -333,7 +344,7 @@ static void sync_time(void) {
     }
     
     // Set Timezone
-    setenv("TZ", "GMT+7", 1); 
+    setenv("TZ", "ICT-7", 1); 
     tzset();
     
     time_t now;
