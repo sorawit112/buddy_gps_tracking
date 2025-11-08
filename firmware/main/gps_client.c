@@ -220,6 +220,7 @@ static void send_gps_task(void *pvParameters) {
                 
                 // Safety check: Don't sleep if it's already next WORKING HOUR
                 if (seconds_to_start > 0) {
+                    ESP_LOGI(TAG, "Entering Light Sleep for %ld seconds.", seconds_to_start);
                     vTaskDelay(pdMS_TO_TICKS(seconds_to_start * 1000));
                     continue;
                 }
@@ -283,6 +284,7 @@ static void send_gps_task(void *pvParameters) {
             
             // Safety check: Don't sleep if it's already 8 AM
             if (seconds_to_start > 0) {
+                ESP_LOGI(TAG, "Entering Light Sleep for %ld seconds.", seconds_to_start);
                 vTaskDelay(pdMS_TO_TICKS(seconds_to_start * 1000));
                 continue;
             }
