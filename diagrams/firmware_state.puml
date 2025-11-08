@@ -1,0 +1,52 @@
+@startuml
+title ESP32 GPS Client Operational State Flow
+
+:NVS Init;
+:WIFI Init;
+fork
+    :WIFI_EVENT;
+fork again
+    :IP_EVENT;
+fork again
+: Wait WIFI and IP CONNECTED;
+partition SEND_GPS_TASK {
+    partition SYNC_TIME {
+        :SNTP_INIT;
+        while (SNTP Sync ?) is (not sync)
+            :Light Sleep 2 sec;
+        endwhile (sync)
+        : SET TimeZone;
+    }
+    while (check_time);
+        if (Operating Window?) then (yes)
+            if (First Quarter?) then (yes)
+                : Generate JSON Payloads;
+                : Send Transimision Data;
+                : polling sleep;
+            else (no)
+                : Three Quarter Light Sleep;
+                : Light Sleep;
+            endif
+        elseif (Pre Operating Window?) then (yes)
+            : Pre Window Light Sleep;
+            : Light Sleep;
+        else (no)
+            : Deep Sleep;
+        endif
+        switch (sleep method?)
+        case (deep sleep)
+            : Enter Deep Sleep \n Time until next (START_HOUT - WAKEUP);
+            stop
+        case (light sleep)
+            : Enter Light Sleep \n (60-time_min)*60;
+        case (polling sleep)
+            : Enter Polling Light Sleep \n (POLLING_INTERVAL_SEC);
+        endswitch
+        :VTaskDelay;
+
+    endwhile
+    -[hidden]->
+    detach
+}
+endfork
+@enduml
